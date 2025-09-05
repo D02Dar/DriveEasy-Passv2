@@ -1,0 +1,102 @@
+<svg width="300" height="280" viewBox="0 0 300 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="280" fill="#F6FFED"/>
+  
+  <!-- Road -->
+  <rect x="0" y="220" width="300" height="60" fill="#666"/>
+  <rect x="0" y="245" width="40" height="4" fill="#FFF"/>
+  <rect x="60" y="245" width="40" height="4" fill="#FFF"/>
+  <rect x="120" y="245" width="40" height="4" fill="#FFF"/>
+  <rect x="180" y="245" width="40" height="4" fill="#FFF"/>
+  <rect x="240" y="245" width="40" height="4" fill="#FFF"/>
+  
+  <!-- Multiple Cars (representing community) -->
+  <!-- Car 1 -->
+  <rect x="50" y="180" width="80" height="30" rx="4" fill="#52C41A"/>
+  <rect x="55" y="165" width="25" height="20" rx="2" fill="#E6F7FF"/>
+  <rect x="85" y="165" width="25" height="20" rx="2" fill="#E6F7FF"/>
+  <circle cx="70" cy="215" r="10" fill="#333"/>
+  <circle cx="70" cy="215" r="6" fill="#666"/>
+  <circle cx="110" cy="215" r="10" fill="#333"/>
+  <circle cx="110" cy="215" r="6" fill="#666"/>
+  
+  <!-- Car 2 -->
+  <rect x="150" y="185" width="80" height="30" rx="4" fill="#409EFF"/>
+  <rect x="155" y="170" width="25" height="20" rx="2" fill="#E6F7FF"/>
+  <rect x="185" y="170" width="25" height="20" rx="2" fill="#E6F7FF"/>
+  <circle cx="170" cy="220" r="10" fill="#333"/>
+  <circle cx="170" cy="220" r="6" fill="#666"/>
+  <circle cx="210" cy="220" r="10" fill="#333"/>
+  <circle cx="210" cy="220" r="6" fill="#666"/>
+  
+  <!-- Driving School Building -->
+  <rect x="200" y="80" width="80" height="100" fill="#E6E6E6"/>
+  <rect x="210" y="60" width="60" height="25" fill="#409EFF"/>
+  <text x="240" y="77" text-anchor="middle" fill="#FFF" font-size="10" font-weight="bold">驾校</text>
+  
+  <!-- Windows -->
+  <rect x="210" y="95" width="12" height="12" fill="#409EFF"/>
+  <rect x="228" y="95" width="12" height="12" fill="#409EFF"/>
+  <rect x="246" y="95" width="12" height="12" fill="#409EFF"/>
+  <rect x="264" y="95" width="12" height="12" fill="#409EFF"/>
+  <rect x="210" y="115" width="12" height="12" fill="#409EFF"/>
+  <rect x="228" y="115" width="12" height="12" fill="#409EFF"/>
+  <rect x="246" y="115" width="12" height="12" fill="#409EFF"/>
+  <rect x="264" y="115" width="12" height="12" fill="#409EFF"/>
+  
+  <!-- Door -->
+  <rect x="235" y="150" width="20" height="30" fill="#8B4513"/>
+  <circle cx="250" cy="165" r="1" fill="#FFD700"/>
+  
+  <!-- People (representing community) -->
+  <!-- Person 1 -->
+  <circle cx="80" cy="140" r="8" fill="#FFEAA7"/>
+  <rect x="75" y="148" width="10" height="15" rx="2" fill="#409EFF"/>
+  <rect x="77" y="163" width="3" height="8" fill="#333"/>
+  <rect x="82" y="163" width="3" height="8" fill="#333"/>
+  
+  <!-- Person 2 -->
+  <circle cx="120" cy="145" r="8" fill="#FFEAA7"/>
+  <rect x="115" y="153" width="10" height="15" rx="2" fill="#52C41A"/>
+  <rect x="117" y="168" width="3" height="8" fill="#333"/>
+  <rect x="122" y="168" width="3" height="8" fill="#333"/>
+  
+  <!-- Person 3 -->
+  <circle cx="160" cy="142" r="8" fill="#FFEAA7"/>
+  <rect x="155" y="150" width="10" height="15" rx="2" fill="#FA8C16"/>
+  <rect x="157" y="165" width="3" height="8" fill="#333"/>
+  <rect x="162" y="165" width="3" height="8" fill="#333"/>
+  
+  <!-- Success symbols -->
+  <!-- Trophy -->
+  <rect x="40" y="100" width="20" height="25" fill="#FFD700"/>
+  <rect x="45" y="95" width="10" height="8" fill="#FFD700"/>
+  <rect x="47" y="92" width="6" height="5" fill="#FFD700"/>
+  <rect x="42" y="125" width="16" height="5" fill="#8B4513"/>
+  
+  <!-- Certificate -->
+  <rect x="250" y="40" width="30" height="20" fill="#FFF" stroke="#409EFF" stroke-width="2"/>
+  <rect x="255" y="45" width="20" height="2" fill="#409EFF"/>
+  <rect x="255" y="50" width="15" height="2" fill="#409EFF"/>
+  <circle cx="270" cy="55" r="3" fill="#52C41A"/>
+  <path d="M268 55 L270 57 L273 53" stroke="#FFF" stroke-width="1" fill="none"/>
+  
+  <!-- Stars (representing success) -->
+  <polygon points="30,50 32,56 38,56 33,60 35,66 30,62 25,66 27,60 22,56 28,56" fill="#FFD700"/>
+  <polygon points="270,25 271,28 274,28 272,30 273,33 270,31 267,33 268,30 266,28 269,28" fill="#FFD700"/>
+  <polygon points="50,30 51,33 54,33 52,35 53,38 50,36 47,38 48,35 46,33 49,33" fill="#FFD700"/>
+  
+  <!-- Progress indicators -->
+  <rect x="20" y="200" width="60" height="8" rx="4" fill="#E6E6E6"/>
+  <rect x="20" y="200" width="45" height="8" rx="4" fill="#52C41A"/>
+  <text x="50" y="195" text-anchor="middle" fill="#52C41A" font-size="8">75%</text>
+  
+  <!-- Community connection lines -->
+  <line x1="90" y1="150" x2="110" y2="155" stroke="#409EFF" stroke-width="2" opacity="0.5"/>
+  <line x1="130" y1="155" x2="150" y2="152" stroke="#409EFF" stroke-width="2" opacity="0.5"/>
+  <line x1="90" y1="155" x2="150" y2="152" stroke="#52C41A" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Welcome text background -->
+  <rect x="70" y="15" width="160" height="25" rx="12" fill="#409EFF" opacity="0.1"/>
+  <text x="150" y="32" text-anchor="middle" fill="#409EFF" font-size="14" font-weight="bold">欢迎加入驾考大家庭</text>
+</svg>

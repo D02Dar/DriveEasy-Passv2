@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title id="page-title">驾考助手 - 专业的驾驶考试练习平台</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="专业的驾驶考试练习平台，提供科目一、科目四题库练习，事故记录，驾校信息查询等功能">
+  <meta name="keywords" content="驾考,驾驶考试,科目一,科目四,题库练习,事故记录,驾校信息">
+  <meta name="author" content="驾考助手团队">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="驾考助手 - 专业的驾驶考试练习平台">
+  <meta property="og:description" content="专业的驾驶考试练习平台，提供科目一、科目四题库练习，事故记录，驾校信息查询等功能">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://driving-exam.com">
+  <meta property="og:image" content="/favicon.ico">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#409EFF">
+  <meta name="msapplication-TileColor" content="#409EFF">
+  
+  <!-- Preload Critical Resources -->
+  <!-- Element Plus icons are loaded automatically, no need to preload -->
+
+  <!-- CSS Variables for Theme -->
+  <style>
+    :root {
+      --primary-color: #409EFF;
+      --success-color: #67C23A;
+      --warning-color: #E6A23C;
+      --danger-color: #F56C6C;
+      --info-color: #909399;
+    }
+
+
+  </style>
+</head>
+<body>
+  <noscript>
+    <strong id="noscript-text">抱歉，驾考助手需要启用JavaScript才能正常运行。请在浏览器设置中启用JavaScript。</strong>
+  </noscript>
+
+
+
+  <!-- App Container -->
+  <div id="app"></div>
+
+  <script>
+    // 设置多语言页面标题
+    function setLanguageTexts() {
+      const language = localStorage.getItem('language') || 'zh-CN';
+
+      // 设置页面标题
+      const pageTitle = document.getElementById('page-title');
+      if (pageTitle) {
+        const titles = {
+          'zh-CN': '驾考助手 - 专业的驾驶考试练习平台',
+          'en-US': 'DriveEasy Pass - Professional Driving Test Practice Platform',
+          'th-TH': 'ผู้ช่วยขับขี่ - แพลตฟอร์มฝึกสอบขับขี่มืออาชีพ'
+        };
+        pageTitle.textContent = titles[language] || titles['zh-CN'];
+      }
+    }
+
+    // 立即设置多语言文本
+    setLanguageTexts();
+
+    // Google Maps 初始化回调 - 必须在API脚本加载前定义
+    window.initGoogleMaps = function() {
+      // 触发自定义事件通知Vue组件
+      window.dispatchEvent(new CustomEvent('google-maps-loaded'));
+    };
+  </script>
+
+  <!-- Google Maps JavaScript API - 使用异步加载以获得最佳性能 -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCjI9uGyEJxffarqspKNaCeNx7Q15fhAw&libraries=places,marker&loading=async&callback=initGoogleMaps"></script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
