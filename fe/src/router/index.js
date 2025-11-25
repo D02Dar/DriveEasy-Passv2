@@ -23,6 +23,7 @@ const AdminDashboard = () => import('@/views/admin/Dashboard.vue')
 const AdminQuestions = () => import('@/views/admin/Questions.vue')
 const AdminUsers = () => import('@/views/admin/Users.vue')
 const AdminNotifications = () => import('@/views/admin/Notifications.vue')
+const AdminSettings = () => import('@/views/admin/Settings.vue')
 
 const NotFound = () => import('@/views/error/NotFound.vue')
 const LanguageTest = () => import('@/views/test/LanguageTest.vue')
@@ -82,6 +83,15 @@ const routes = [
     component: PracticeDetail,
     meta: {
       title: 'startPractice',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/practice/bookmarks',
+    name: 'BookmarkPractice',
+    component: PracticeDetail,
+    meta: {
+      title: 'bookmarkPractice',
       requiresAuth: true
     }
   },
@@ -198,6 +208,16 @@ const routes = [
     component: AdminNotifications,
     meta: {
       title: 'notificationManagement',
+      requiresAuth: true,
+      requiresAdmin: true
+    }
+  },
+  {
+    path: '/admin/settings',
+    name: 'AdminSettings',
+    component: AdminSettings,
+    meta: {
+      title: 'adminSettings',
       requiresAuth: true,
       requiresAdmin: true
     }

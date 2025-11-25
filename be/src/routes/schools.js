@@ -173,6 +173,118 @@ router.get('/nearby', optionalAuth, async (req, res) => {
       }
     }
 
+    // 如果总结果数量过少，使用默认本地驾校兜底，保证至少有3家
+    if (allSchools.length < 3) {
+      const defaultSchools = [
+        {
+          id: 'default_1',
+          name: '示例驾校一',
+          nameZh: '示例驾校一',
+          nameEn: 'Example Driving School 1',
+          nameTh: 'โรงเรียนสอนขับรถตัวอย่าง 1',
+          address: '北京市某路 1 号',
+          addressZh: '北京市某路 1 号',
+          addressEn: 'No.1, Some Road, Beijing, China',
+          addressTh: 'ถนนตัวอย่าง 1 กรุงปักกิ่ง ประเทศจีน',
+          latitude: 39.9042,
+          longitude: 116.4074,
+          phone: '',
+          lineId: null,
+          websiteUrl: null,
+          description: '本地默认驾校示例，供API兜底展示使用',
+          descriptionZh: '本地默认驾校示例，供API兜底展示使用',
+          descriptionEn: 'Local default driving school example for API fallback display.',
+          descriptionTh: 'ตัวอย่างโรงเรียนสอนขับรถในพื้นที่ สำหรับใช้เป็นข้อมูลสำรองของ API',
+          isPartner: 0,
+          logoUrl: null,
+          source: 'default',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'default_2',
+          name: '示例驾校二',
+          nameZh: '示例驾校二',
+          nameEn: 'Example Driving School 2',
+          nameTh: 'โรงเรียนสอนขับรถตัวอย่าง 2',
+          address: '北京市某路 2 号',
+          addressZh: '北京市某路 2 号',
+          addressEn: 'No.2, Some Road, Beijing, China',
+          addressTh: 'ถนนตัวอย่าง 2 กรุงปักกิ่ง ประเทศจีน',
+          latitude: 39.9142,
+          longitude: 116.4174,
+          phone: '',
+          lineId: null,
+          websiteUrl: null,
+          description: '本地默认驾校示例，供API兜底展示使用',
+          descriptionZh: '本地默认驾校示例，供API兜底展示使用',
+          descriptionEn: 'Local default driving school example for API fallback display.',
+          descriptionTh: 'ตัวอย่างโรงเรียนสอนขับรถในพื้นที่ สำหรับใช้เป็นข้อมูลสำรองของ API',
+          isPartner: 0,
+          logoUrl: null,
+          source: 'default',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'default_3',
+          name: '示例驾校三',
+          nameZh: '示例驾校三',
+          nameEn: 'Example Driving School 3',
+          nameTh: 'โรงเรียนสอนขับรถตัวอย่าง 3',
+          address: '北京市某路 3 号',
+          addressZh: '北京市某路 3 号',
+          addressEn: 'No.3, Some Road, Beijing, China',
+          addressTh: 'ถนนตัวอย่าง 3 กรุงปักกิ่ง ประเทศจีน',
+          latitude: 39.8942,
+          longitude: 116.3974,
+          phone: '',
+          lineId: null,
+          websiteUrl: null,
+          description: '本地默认驾校示例，供API兜底展示使用',
+          descriptionZh: '本地默认驾校示例，供API兜底展示使用',
+          descriptionEn: 'Local default driving school example for API fallback display.',
+          descriptionTh: 'ตัวอย่างโรงเรียนสอนขับรถในพื้นที่ สำหรับใช้เป็นข้อมูลสำรองของ API',
+          isPartner: 0,
+          logoUrl: null,
+          source: 'default',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+
+      const existingKeySet = new Set(
+        allSchools.map(s => `${s.name || ''}_${s.address || ''}`)
+      );
+
+      const R = 6371; // 地球半径（公里）
+
+      for (const school of defaultSchools) {
+        if (allSchools.length >= 3) break;
+
+        const key = `${school.name || ''}_${school.address || ''}`;
+        if (existingKeySet.has(key)) {
+          continue;
+        }
+
+        if (school.latitude && school.longitude) {
+          const dLat = (school.latitude - latitude) * Math.PI / 180;
+          const dLon = (school.longitude - longitude) * Math.PI / 180;
+          const a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(latitude * Math.PI / 180) * Math.cos(school.latitude * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          school.distance = R * c;
+        } else {
+          school.distance = null;
+        }
+
+        allSchools.push(school);
+        existingKeySet.add(key);
+      }
+    }
+
     // 按距离排序并限制结果数量
     allSchools.sort((a, b) => (a.distance || 0) - (b.distance || 0));
     allSchools = allSchools.slice(0, 200); // 增加返回数量以支持前端分页

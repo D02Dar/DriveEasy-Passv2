@@ -155,11 +155,11 @@
         >
           <div class="school-header">
             <div class="school-logo">
-              <img v-if="school.logoUrl" :src="school.logoUrl" :alt="school.name" />
+              <img v-if="school.logoUrl" :src="school.logoUrl" :alt="getLocalizedSchoolName(school)" />
               <el-icon v-else><School /></el-icon>
             </div>
             <div class="school-info">
-              <h3 class="school-name">{{ school.name }}</h3>
+              <h3 class="school-name">{{ getLocalizedSchoolName(school) }}</h3>
               <div class="school-badges">
                 <el-tag v-if="school.isPartner" type="success" size="small">
                   {{ $t('schools.partnerSchool') }}
@@ -174,10 +174,10 @@
           <div class="school-content">
             <div class="school-address">
               <el-icon><LocationInformation /></el-icon>
-              <span>{{ school.address || $t('schools.addressNotProvided') }}</span>
+              <span>{{ getLocalizedSchoolAddress(school) || $t('schools.addressNotProvided') }}</span>
             </div>
-            <div v-if="school.description" class="school-description">
-              {{ school.description }}
+            <div v-if="school.description || school.descriptionZh || school.descriptionEn || school.descriptionTh" class="school-description">
+              {{ getLocalizedSchoolDescription(school) }}
             </div>
           </div>
 
@@ -243,11 +243,15 @@
       <div v-if="selectedSchool" class="school-detail-content">
         <div class="detail-header">
           <div class="detail-logo">
-            <img v-if="selectedSchool.logoUrl" :src="selectedSchool.logoUrl" :alt="selectedSchool.name" />
+            <img
+              v-if="selectedSchool.logoUrl"
+              :src="selectedSchool.logoUrl"
+              :alt="getLocalizedSchoolName(selectedSchool)"
+            />
             <el-icon v-else><School /></el-icon>
           </div>
           <div class="detail-info">
-            <h2 class="detail-name">{{ selectedSchool.name }}</h2>
+            <h2 class="detail-name">{{ getLocalizedSchoolName(selectedSchool) }}</h2>
             <div class="detail-badges">
               <el-tag v-if="selectedSchool.isPartner" type="success">
                 {{ $t('schools.partnerSchool') }}
@@ -264,7 +268,7 @@
           <div class="detail-grid">
             <div class="detail-item">
               <label>{{ $t('schools.address') }}:</label>
-              <span>{{ selectedSchool.address || $t('schools.notProvided') }}</span>
+              <span>{{ getLocalizedSchoolAddress(selectedSchool) || $t('schools.notProvided') }}</span>
             </div>
             <div class="detail-item">
               <label>{{ $t('schools.phone') }}:</label>
@@ -286,9 +290,12 @@
           </div>
         </div>
 
-        <div v-if="selectedSchool.description" class="detail-section">
+        <div
+          v-if="selectedSchool.description || selectedSchool.descriptionZh || selectedSchool.descriptionEn || selectedSchool.descriptionTh"
+          class="detail-section"
+        >
           <h4>{{ $t('schools.schoolIntroduction') }}</h4>
-          <p class="description-text">{{ selectedSchool.description }}</p>
+          <p class="description-text">{{ getLocalizedSchoolDescription(selectedSchool) }}</p>
         </div>
 
         <div v-if="selectedSchool.latitude && selectedSchool.longitude" class="detail-section">
@@ -486,7 +493,7 @@ export default {
     List
   },
   setup() {
-    const { t } = useI18n()
+    const { t, locale } = useI18n()
     const loading = ref(false)
 
     // 使用自动定位组合式函数
@@ -542,6 +549,46 @@ export default {
     })
 
 
+
+    // 多语言辅助函数
+    const getLocalizedSchoolName = (school) => {
+      if (!school) return ''
+      const currentLocale = locale.value || ''
+      if (currentLocale.startsWith('en')) {
+        return school.nameEn || school.name || school.nameZh || school.nameTh || ''
+      }
+      if (currentLocale.startsWith('th')) {
+        return school.nameTh || school.name || school.nameZh || school.nameEn || ''
+      }
+      // 默认中文（zh-CN 或其他）
+      return school.nameZh || school.name || school.nameEn || school.nameTh || ''
+    }
+
+    const getLocalizedSchoolAddress = (school) => {
+      if (!school) return ''
+      const currentLocale = locale.value || ''
+      if (currentLocale.startsWith('en')) {
+        return school.addressEn || school.address || school.addressZh || school.addressTh || ''
+      }
+      if (currentLocale.startsWith('th')) {
+        return school.addressTh || school.address || school.addressZh || school.addressEn || ''
+      }
+      // 默认中文
+      return school.addressZh || school.address || school.addressEn || school.addressTh || ''
+    }
+
+    const getLocalizedSchoolDescription = (school) => {
+      if (!school) return ''
+      const currentLocale = locale.value || ''
+      if (currentLocale.startsWith('en')) {
+        return school.descriptionEn || school.description || school.descriptionZh || school.descriptionTh || ''
+      }
+      if (currentLocale.startsWith('th')) {
+        return school.descriptionTh || school.description || school.descriptionZh || school.descriptionEn || ''
+      }
+      // 默认中文
+      return school.descriptionZh || school.description || school.descriptionEn || school.descriptionTh || ''
+    }
 
     // 测试位置数据
     const testLocations = ref([
@@ -901,8 +948,8 @@ export default {
       return {
         latitude: selectedSchool.value.latitude,
         longitude: selectedSchool.value.longitude,
-        name: selectedSchool.value.name,
-        address: selectedSchool.value.address,
+        name: getLocalizedSchoolName(selectedSchool.value),
+        address: getLocalizedSchoolAddress(selectedSchool.value),
         id: selectedSchool.value.id,
         source: selectedSchool.value.source,
         isPartner: selectedSchool.value.isPartner,
@@ -928,18 +975,23 @@ export default {
       locating,
       schools,
       isMobile,
+      // 筛选与排序
       searchKeyword,
       filterPartner,
       sortBy,
       distanceFilter,
+      // 分页
       currentPage,
       pageSize,
       totalSchools,
+      // 视图与位置
+      viewMode,
+      userLocation,
+      includeGooglePlaces,
+      // 详情对话框
       schoolDetailVisible,
       selectedSchool,
-      userLocation,
-      viewMode,
-      includeGooglePlaces,
+      // 工具函数
       formatDistance,
       getCurrentLocation,
       searchNearby,
@@ -971,6 +1023,9 @@ export default {
       applyCustomLocation,
       // 详情地图相关
       selectedSchoolMarker,
+      getLocalizedSchoolName,
+      getLocalizedSchoolAddress,
+      getLocalizedSchoolDescription,
       handleDetailMapReady,
       // 图标
       School,

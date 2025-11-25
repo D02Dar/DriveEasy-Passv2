@@ -4,17 +4,33 @@
     <section class="hero">
       <div class="hero-container">
         <div class="hero-content">
-          <h1 class="hero-title">{{ $t('home.hero.titleMain') }}</h1>
-          <p class="hero-subtitle">{{ $t('home.hero.subtitle') }}</p>
-
-          <div class="hero-actions">
-            <el-button
-              type="primary"
-              size="large"
-              @click="handlePrimaryAction"
-            >
-              {{ isAuthenticated ? $t('home.hero.startPractice') : $t('home.hero.getStarted') }}
-            </el-button>
+          <div class="hero-text">
+            <h1 class="hero-title">
+              <span class="title-line">Professional Driving Test</span>
+              <span class="title-line">Practice Platform</span>
+            </h1>
+            <p class="hero-subtitle">
+              Provides subject 1 and subject 4 question bank practice, accident records, driving school information inquiry and other functions.
+            </p>
+            <div class="hero-actions">
+              <el-button
+                type="primary"
+                size="large"
+                class="register-btn"
+                @click="handlePrimaryAction"
+              >
+                {{ isAuthenticated ? $t('home.hero.startPractice') : 'Register Now' }}
+              </el-button>
+            </div>
+          </div>
+          <div class="hero-illustration">
+            <div class="illustration-container">
+              <img 
+                src="/images/hero-car.svg" 
+                alt="Driving Practice Platform" 
+                class="hero-car-svg"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -386,11 +402,13 @@ export default {
 
 // Hero Section
 .hero {
-  min-height: 60vh;
+  min-height: 80vh;
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  color: var(--el-text-color-primary);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-container {
@@ -398,41 +416,155 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 4rem 2rem;
-  text-align: center;
+  position: relative;
+  z-index: 2;
 
   @media (max-width: 768px) {
     padding: 3rem 1rem;
   }
 }
 
-.hero-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 1.5rem;
-  color: var(--el-text-color-primary);
-}
+.hero-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  min-height: 60vh;
 
-.hero-subtitle {
-  font-size: 1.125rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  color: var(--el-text-color-regular);
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    text-align: center;
+    min-height: auto;
+  }
 
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: center;
+  @media (max-width: 768px) {
+    gap: 2rem;
   }
 }
+
+.hero-text {
+  .hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: white;
+
+    .title-line {
+      display: block;
+    }
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 500px;
+
+    @media (max-width: 968px) {
+      max-width: none;
+    }
+  }
+
+  .hero-actions {
+    .register-btn {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+}
+
+.hero-illustration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  .illustration-container {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    min-height: 300px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+
+    @media (max-width: 968px) {
+      max-width: 350px;
+      min-height: 263px;
+    }
+
+    @media (max-width: 768px) {
+      max-width: 300px;
+      min-height: 225px;
+      padding: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      max-width: 250px;
+      min-height: 188px;
+    }
+
+    @media (max-width: 360px) {
+      max-width: 200px;
+      min-height: 150px;
+    }
+  }
+
+  .hero-car-svg {
+    width: 100%;
+    height: auto;
+    max-width: 400px;
+    max-height: 300px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+    transition: all 0.3s ease;
+    display: block;
+    margin: 0 auto;
+
+    &:hover {
+      transform: scale(1.05);
+      filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.15));
+    }
+
+    @media (max-width: 968px) {
+      max-width: 350px;
+      max-height: 263px;
+    }
+
+    @media (max-width: 768px) {
+      max-width: 300px;
+      max-height: 225px;
+    }
+
+    @media (max-width: 480px) {
+      max-width: 250px;
+      max-height: 188px;
+    }
+
+    @media (max-width: 360px) {
+      max-width: 200px;
+      max-height: 150px;
+    }
+  }
+}
+
 
 
 

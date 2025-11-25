@@ -369,8 +369,15 @@ export default {
         return
       }
       
-      // 这里可以实现收藏题目的专门练习模式
-      ElMessage.info(t('messages.info'))
+      // 跳转到收藏题目练习页面
+      // 使用特殊的路由参数来标识这是收藏题目练习
+      router.push({
+        path: '/practice/bookmarks',
+        query: {
+          mode: 'bookmark',
+          showAnswer: 'true' // 收藏题目练习模式显示答案
+        }
+      })
     }
 
     // 返回练习页面
@@ -748,10 +755,6 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .bookmarks-page {
-    /* 移除重复的padding，由AppLayout的page-content处理 */
-  }
-
   .header-content {
     flex-direction: column;
     gap: 16px;

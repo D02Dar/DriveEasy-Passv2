@@ -411,7 +411,7 @@ router.post('/submit', authenticateToken, [
         total_questions = total_questions + 1,
         correct_answers = correct_answers + ?,
         score = (correct_answers * 100.0 / total_questions),
-        is_passed = (score >= (SELECT unlock_threshold FROM question_categories WHERE id = ?))
+        is_passed = (score >= COALESCE((SELECT unlock_threshold FROM question_categories WHERE id = ?), 80))
       WHERE id = ?
     `, [isCorrect ? 1 : 0, categoryId, practiceRecordId]);
 

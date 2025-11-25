@@ -60,6 +60,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElText: typeof import('element-plus/es')['ElText']
     ElTimePicker: typeof import('element-plus/es')['ElTimePicker']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     LanguageSwitcher: typeof import('./src/components/common/LanguageSwitcher.vue')['default']
     LocationPicker: typeof import('./src/components/LocationPicker.vue')['default']

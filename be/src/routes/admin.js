@@ -66,6 +66,23 @@ router.get('/stats', async (req, res) => {
       ORDER BY date DESC
     `);
 
+    // 获取通知统计
+    const notificationStats = await executeQuery(`
+      SELECT
+        COUNT(*) as totalNotifications,
+        COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) as todayNotifications,
+        COUNT(CASE WHEN publish_at <= NOW() THEN 1 END) as publishedNotifications,
+        COUNT(CASE WHEN publish_at > NOW() THEN 1 END) as scheduledNotifications
+      FROM notifications
+    `);
+
+    // 获取活跃用户统计（最近7天有活动的用户）
+    const activeUsersStats = await executeQuery(`
+      SELECT COUNT(DISTINCT user_id) as activeUsers
+      FROM user_practice_records
+      WHERE completed_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+    `);
+
     res.json({
       success: true,
       data: {
@@ -73,6 +90,7 @@ router.get('/stats', async (req, res) => {
         questions: questionStats[0],
         categories: categoryStats[0],
         practices: practiceStats[0],
+        notifications: notificationStats[0],
         accidents: {
           totalReports: 0,
           todayReports: 0

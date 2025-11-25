@@ -49,8 +49,8 @@
             <el-icon><User /></el-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-value">{{ stats.users?.activeUsers || 0 }}</div>
-            <div class="stat-label">{{ t('adminNotifications.activeUsers') }}</div>
+            <div class="stat-value">{{ stats.users?.totalUsers || 0 }}</div>
+            <div class="stat-label">{{ t('adminNotifications.totalUsers') }}</div>
           </div>
         </div>
       </div>

@@ -223,10 +223,11 @@ export default {
     // 使用统一的语言处理工具
     const { getQuestionLang, getCurrentLang } = useQuestionLanguage()
     
-    const categoryId = ref(parseInt(route.params.categoryId))
+    const categoryId = ref(parseInt(route.params.categoryId) || 1) // 默认使用分类ID 1
     const sessionId = ref(route.query.sessionId)
     const practiceMode = ref(route.query.mode || 'practice')
     const showAnswerImmediately = ref(route.query.showAnswer === 'true')
+    const isBookmarkPractice = ref(route.path === '/practice/bookmarks')
     
     const loading = ref(false)
     const questions = ref([])
@@ -267,12 +268,19 @@ export default {
           questionLang: questionLanguage,
           categoryId: categoryId.value,
           sessionId: sessionId.value,
+          isBookmarkPractice: isBookmarkPractice.value,
           timestamp: new Date().toISOString(),
           route: route.path,
           params: route.params
         })
 
-        if (sessionId.value) {
+        // 如果是收藏题目练习模式
+        if (isBookmarkPractice.value) {
+          response = await api.questions.getBookmarks({
+            language: questionLanguage,
+            limit: 50 // 收藏题目练习可以更多一些
+          })
+        } else if (sessionId.value) {
           // 即使有sessionId，也要检查语言是否匹配
           try {
             const sessionResponse = await api.practice.getSessionQuestions(sessionId.value)
@@ -324,9 +332,11 @@ export default {
           })
         }
 
-        // 获取分类信息
-        const categoryResponse = await api.categories.getById(categoryId.value)
-        categoryName.value = categoryResponse.data.name
+        // 获取分类信息（仅在非收藏题目练习模式下）
+        if (!isBookmarkPractice.value && categoryId.value) {
+          const categoryResponse = await api.categories.getById(categoryId.value)
+          categoryName.value = categoryResponse.data.name
+        }
       } catch (error) {
         ElMessage.error(t('messages.error'))
       } finally {
@@ -336,6 +346,9 @@ export default {
 
     // 获取分类显示名称
     const getCategoryDisplayName = () => {
+      if (isBookmarkPractice.value) {
+        return t('practice.bookmarkedQuestions')
+      }
       return translateCategoryName(categoryName.value) || t('practice.allQuestions')
     }
 
@@ -358,7 +371,7 @@ export default {
         const response = await api.questions.submitAnswer({
           questionId: currentQuestion.value.id,
           selectedOptionId: selectedOptionId.value,
-          categoryId: categoryId.value
+          categoryId: isBookmarkPractice.value ? 5 : categoryId.value // 收藏题目练习使用分类ID 5
         })
 
         // 记录答案
@@ -583,6 +596,7 @@ export default {
       isPassed,
       categoryName,
       practiceMode,
+      isBookmarkPractice,
       currentLanguageDisplay,
       getCategoryDisplayName,
       getOptionPrefix,

@@ -210,17 +210,116 @@
     <!-- 照片预览对话框 -->
     <el-dialog
       v-model="previewDialogVisible"
-      :title="$t('accident.photoPreview')"
-      width="80%"
+      :title="previewDialogTitle"
+      width="90%"
       :fullscreen="isMobile"
+      class="photo-preview-dialog"
     >
       <div class="preview-dialog-content">
-        <img 
-          v-if="currentPreviewPhoto"
-          :src="currentPreviewPhoto.url" 
-          :alt="currentPreviewPhoto.name"
-          class="preview-image"
-        />
+        <!-- 单张照片预览 -->
+        <div v-if="previewMode === 'single'" class="single-preview">
+          <div class="preview-image-container">
+            <img 
+              v-if="currentPreviewPhoto"
+              :src="currentPreviewPhoto.url" 
+              :alt="currentPreviewPhoto.name"
+              class="preview-image"
+              @click="toggleZoom"
+            />
+            <div v-if="isZoomed" class="zoom-overlay" @click="toggleZoom"></div>
+          </div>
+          <div class="preview-info">
+            <h4>{{ currentPreviewPhoto?.name }}</h4>
+            <p>{{ getPhotoCategoryTitle(currentPreviewPhoto?.photoType) }}</p>
+            <div class="preview-actions">
+              <el-button @click="downloadPhoto(currentPreviewPhoto)">
+                <el-icon><Download /></el-icon>
+                {{ $t('common.download') }}
+              </el-button>
+              <el-button type="danger" @click="deletePhoto(currentPreviewPhoto)">
+                <el-icon><Delete /></el-icon>
+                {{ $t('common.delete') }}
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 多张照片画廊预览 -->
+        <div v-else-if="previewMode === 'gallery'" class="gallery-preview">
+          <div class="gallery-header">
+            <div class="gallery-info">
+              <span>{{ $t('accident.photoGallery') }}</span>
+              <el-tag size="small">{{ currentPhotoIndex + 1 }} / {{ allPhotos.length }}</el-tag>
+            </div>
+            <div class="gallery-actions">
+              <el-button @click="downloadAllPhotos">
+                <el-icon><Download /></el-icon>
+                {{ $t('accident.downloadAll') }}
+              </el-button>
+            </div>
+          </div>
+          
+          <div class="gallery-content">
+            <div class="gallery-navigation">
+              <el-button 
+                :disabled="currentPhotoIndex === 0"
+                @click="previousPhoto"
+                class="nav-button"
+              >
+                <el-icon><ArrowLeft /></el-icon>
+              </el-button>
+            </div>
+            
+            <div class="gallery-image-container">
+              <img 
+                :src="allPhotos[currentPhotoIndex]?.url" 
+                :alt="allPhotos[currentPhotoIndex]?.name"
+                class="gallery-image"
+                @click="toggleZoom"
+              />
+              <div v-if="isZoomed" class="zoom-overlay" @click="toggleZoom"></div>
+            </div>
+            
+            <div class="gallery-navigation">
+              <el-button 
+                :disabled="currentPhotoIndex === allPhotos.length - 1"
+                @click="nextPhoto"
+                class="nav-button"
+              >
+                <el-icon><ArrowRight /></el-icon>
+              </el-button>
+            </div>
+          </div>
+          
+          <div class="gallery-footer">
+            <div class="photo-info">
+              <h4>{{ allPhotos[currentPhotoIndex]?.name }}</h4>
+              <p>{{ getPhotoCategoryTitle(allPhotos[currentPhotoIndex]?.photoType) }}</p>
+            </div>
+            <div class="photo-actions">
+              <el-button @click="downloadPhoto(allPhotos[currentPhotoIndex])">
+                <el-icon><Download /></el-icon>
+                {{ $t('common.download') }}
+              </el-button>
+              <el-button type="danger" @click="deletePhoto(allPhotos[currentPhotoIndex])">
+                <el-icon><Delete /></el-icon>
+                {{ $t('common.delete') }}
+              </el-button>
+            </div>
+          </div>
+          
+          <!-- 缩略图导航 -->
+          <div class="thumbnail-nav">
+            <div 
+              v-for="(photo, index) in allPhotos" 
+              :key="photo.uid"
+              :class="['thumbnail', { active: index === currentPhotoIndex }]"
+              @click="goToPhoto(index)"
+            >
+              <img :src="photo.url" :alt="photo.name" />
+            </div>
+          </div>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -230,7 +329,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useResponsive } from '@/composables/useResponsive'
 import {
   Camera,
@@ -240,7 +339,11 @@ import {
   View,
   Picture,
   Folder,
-  Document
+  Document,
+  Download,
+  Delete,
+  ArrowLeft,
+  ArrowRight
 } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -263,6 +366,9 @@ const store = useStore()
 // 状态
 const previewDialogVisible = ref(false)
 const currentPreviewPhoto = ref(null)
+const previewMode = ref('single') // 'single' 或 'gallery'
+const currentPhotoIndex = ref(0)
+const isZoomed = ref(false)
 const uploadProgress = reactive({
   total: 0,
   completed: 0,
@@ -290,7 +396,7 @@ const photoCategories = ref([
     icon: 'Folder',
     required: true,
     maxCount: 2,
-    exampleImage: '/images/examples/front-view.jpg'
+    exampleImage: '/images/examples/qian.png'
   },
   {
     type: 'rearView',
@@ -299,7 +405,7 @@ const photoCategories = ref([
     icon: 'Folder',
     required: true,
     maxCount: 2,
-    exampleImage: '/images/examples/rear-view.jpg'
+    exampleImage: '/images/examples/hou.png'
   },
   {
     type: 'damageDetail',
@@ -308,7 +414,7 @@ const photoCategories = ref([
     icon: 'Camera',
     required: true,
     maxCount: 4,
-    exampleImage: '/images/examples/damage-detail.jpg'
+    exampleImage: '/images/examples/shun.png'
   },
   {
     type: 'scenePanorama',
@@ -317,7 +423,7 @@ const photoCategories = ref([
     icon: 'View',
     required: true,
     maxCount: 2,
-    exampleImage: '/images/examples/scene-panorama.jpg'
+    exampleImage: '/images/examples/ce.png'
   },
   {
     type: 'driverLicense',
@@ -326,7 +432,7 @@ const photoCategories = ref([
     icon: 'Document',
     required: false,
     maxCount: 2,
-    exampleImage: '/images/examples/driver-license.jpg'
+    exampleImage: '/images/examples/jiashi.png'
   },
   {
     type: 'vehicleLicense',
@@ -335,7 +441,7 @@ const photoCategories = ref([
     icon: 'Document',
     required: false,
     maxCount: 2,
-    exampleImage: '/images/examples/vehicle-license.jpg'
+    exampleImage: '/images/examples/xingshi.png'
   }
 ])
 
@@ -379,6 +485,22 @@ const canProceed = computed(() => {
 const uploadProgressPercentage = computed(() => {
   if (uploadProgress.total === 0) return 0
   return Math.round((uploadProgress.completed / uploadProgress.total) * 100)
+})
+
+// 预览相关计算属性
+const allPhotos = computed(() => {
+  const photos = []
+  Object.values(localFormData.photos).forEach(photoList => {
+    photos.push(...photoList)
+  })
+  return photos
+})
+
+const previewDialogTitle = computed(() => {
+  if (previewMode.value === 'gallery') {
+    return t('accident.photoGallery')
+  }
+  return t('accident.photoPreview')
 })
 
 // 方法
@@ -469,12 +591,123 @@ const onRemovePhoto = async (file, photoType) => {
 
 const previewPhoto = (photo) => {
   currentPreviewPhoto.value = photo
+  previewMode.value = 'single'
   previewDialogVisible.value = true
 }
 
 const previewAllPhotos = () => {
-  // 实现所有照片预览功能
-  ElMessage.info(t('accident.previewAllPhotos'))
+  if (allPhotos.value.length === 0) {
+    ElMessage.warning(t('accident.noPhotosToPreview'))
+    return
+  }
+  
+  previewMode.value = 'gallery'
+  currentPhotoIndex.value = 0
+  previewDialogVisible.value = true
+}
+
+// 画廊导航方法
+const nextPhoto = () => {
+  if (currentPhotoIndex.value < allPhotos.value.length - 1) {
+    currentPhotoIndex.value++
+  }
+}
+
+const previousPhoto = () => {
+  if (currentPhotoIndex.value > 0) {
+    currentPhotoIndex.value--
+  }
+}
+
+const goToPhoto = (index) => {
+  currentPhotoIndex.value = index
+}
+
+// 缩放功能
+const toggleZoom = () => {
+  isZoomed.value = !isZoomed.value
+}
+
+// 获取照片分类标题
+const getPhotoCategoryTitle = (photoType) => {
+  const category = photoCategories.value.find(cat => cat.type === photoType)
+  return category ? category.title : ''
+}
+
+// 下载照片
+const downloadPhoto = (photo) => {
+  if (!photo) return
+  
+  const link = document.createElement('a')
+  link.href = photo.url
+  link.download = photo.name
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  
+  ElMessage.success(t('accident.downloadSuccess'))
+}
+
+// 下载所有照片
+const downloadAllPhotos = () => {
+  if (allPhotos.value.length === 0) {
+    ElMessage.warning(t('accident.noPhotosToDownload'))
+    return
+  }
+  
+  // 创建ZIP下载（这里简化处理，实际项目中可能需要后端支持）
+  allPhotos.value.forEach((photo, index) => {
+    setTimeout(() => {
+      downloadPhoto(photo)
+    }, index * 500) // 延迟下载避免浏览器阻止
+  })
+  
+  ElMessage.success(t('accident.downloadAllSuccess'))
+}
+
+// 删除照片
+const deletePhoto = async (photo) => {
+  if (!photo) return
+  
+  try {
+    await ElMessageBox.confirm(
+      t('accident.confirmDeletePhoto'),
+      t('common.warning'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
+    
+    // 从对应分类中删除照片
+    const photoType = photo.photoType
+    const index = localFormData.photos[photoType].findIndex(p => p.uid === photo.uid)
+    if (index > -1) {
+      localFormData.photos[photoType].splice(index, 1)
+      updateFormData()
+      await autoSaveDraft()
+      
+      // 如果是在画廊模式中删除，需要调整索引
+      if (previewMode.value === 'gallery') {
+        if (currentPhotoIndex.value >= allPhotos.value.length) {
+          currentPhotoIndex.value = Math.max(0, allPhotos.value.length - 1)
+        }
+        
+        // 如果没有照片了，关闭对话框
+        if (allPhotos.value.length === 0) {
+          previewDialogVisible.value = false
+        }
+      } else {
+        // 单张预览模式，删除后关闭对话框
+        previewDialogVisible.value = false
+      }
+      
+      ElMessage.success(t('accident.deleteSuccess'))
+    }
+  } catch (error) {
+    // 用户取消删除
+  }
 }
 
 const confirmPhotos = () => {
@@ -503,6 +736,42 @@ const autoSaveDraft = async () => {
     // 自动保存失败不显示错误消息，避免打扰用户
   }
 }
+
+// 键盘导航支持
+const handleKeydown = (event) => {
+  if (!previewDialogVisible.value) return
+  
+  if (previewMode.value === 'gallery') {
+    switch (event.key) {
+      case 'ArrowLeft':
+        event.preventDefault()
+        previousPhoto()
+        break
+      case 'ArrowRight':
+        event.preventDefault()
+        nextPhoto()
+        break
+      case 'Escape':
+        event.preventDefault()
+        previewDialogVisible.value = false
+        break
+    }
+  } else if (previewMode.value === 'single') {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      previewDialogVisible.value = false
+    }
+  }
+}
+
+// 监听键盘事件
+watch(previewDialogVisible, (visible) => {
+  if (visible) {
+    document.addEventListener('keydown', handleKeydown)
+  } else {
+    document.removeEventListener('keydown', handleKeydown)
+  }
+})
 
 // 监听props变化，同步照片数据
 watch(() => props.formData.photos, (newPhotos) => {
@@ -816,13 +1085,264 @@ watch(() => props.formData.photos, (newPhotos) => {
 }
 
 .preview-dialog-content {
-  text-align: center;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 单张照片预览样式 */
+.single-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.preview-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #f5f7fa;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .preview-image {
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 100%;
   object-fit: contain;
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.preview-image.zoomed {
+  transform: scale(2);
+  cursor: zoom-out;
+}
+
+.zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 2000;
+  cursor: zoom-out;
+}
+
+.preview-info {
+  padding: 20px;
+  border-top: 1px solid #e4e7ed;
+  background: white;
+}
+
+.preview-info h4 {
+  margin: 0 0 8px 0;
+  color: #303133;
+}
+
+.preview-info p {
+  margin: 0 0 16px 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* 画廊预览样式 */
+.gallery-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.gallery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e4e7ed;
+  background: white;
+}
+
+.gallery-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gallery-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gallery-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #f5f7fa;
+}
+
+.gallery-navigation {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.gallery-navigation:first-child {
+  left: 20px;
+}
+
+.gallery-navigation:last-child {
+  right: 20px;
+}
+
+.nav-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e4e7ed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-button:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 100%;
+}
+
+.gallery-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.gallery-image.zoomed {
+  transform: scale(2);
+  cursor: zoom-out;
+}
+
+.gallery-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid #e4e7ed;
+  background: white;
+}
+
+.photo-info h4 {
+  margin: 0 0 4px 0;
+  color: #303133;
+  font-size: 16px;
+}
+
+.photo-info p {
+  margin: 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 缩略图导航 */
+.thumbnail-nav {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  background: white;
+  border-top: 1px solid #e4e7ed;
+  overflow-x: auto;
+}
+
+.thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.thumbnail:hover {
+  border-color: #409eff;
+  transform: scale(1.05);
+}
+
+.thumbnail.active {
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .gallery-content {
+    flex-direction: column;
+  }
+  
+  .gallery-navigation {
+    position: static;
+    transform: none;
+    margin: 10px 0;
+  }
+  
+  .gallery-navigation:first-child,
+  .gallery-navigation:last-child {
+    position: static;
+  }
+  
+  .gallery-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .photo-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .thumbnail-nav {
+    padding: 12px;
+  }
+  
+  .thumbnail {
+    width: 50px;
+    height: 50px;
+  }
 }
 
 @media (max-width: 768px) {
